@@ -1,0 +1,61 @@
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { SketchPicker } from 'react-color';
+import QRCode from 'qrcode.react';
+
+export default function FindMeCardEditor() {
+  const [name, setName] = useState('홍길동');
+  const [title, setTitle] = useState('디자이너');
+  const [intro, setIntro] = useState('나를 찾는 여정, 지금부터 시작입니다.');
+  const [portfolio, setPortfolio] = useState('https://yourportfolio.com');
+  const [color, setColor] = useState('#f4f4f4');
+  const [image, setImage] = useState(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onloadend = () => setImage(reader.result);
+    if (file) reader.readAsDataURL(file);
+  };
+
+  const encodedData = encodeURIComponent(
+    JSON.stringify({ name, title, intro, portfolio })
+  );
+  const cardURL = `https://yourdomain.com/card?data=${encodedData}`;
+
+  return (
+    <div className="p-6 max-w-3xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Find Me 명함 만들기</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-4">
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름" />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="직함" />
+          <Input value={intro} onChange={(e) => setIntro(e.target.value)} placeholder="소개글" />
+          <Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="포트폴리오 링크" />
+          <Input type="file" accept="image/*" onChange={handleImageUpload} />
+          <SketchPicker color={color} onChangeComplete={(c) => setColor(c.hex)} />
+        </div>
+
+        <Card className="w-full h-56" style={{ backgroundColor: color }}>
+          <CardContent className="flex flex-row items-center gap-4 p-4">
+            {image && <img src={image} alt="프로필" className="w-24 h-24 rounded-full object-cover" />}
+            <div>
+              <h2 className="text-xl font-bold">{name}</h2>
+              <p className="text-sm text-gray-700">{title}</p>
+              <p className="text-xs mt-2 max-w-xs">{intro}</p>
+              <a href={portfolio} target="_blank" className="text-blue-600 text-xs underline mt-1 inline-block">포트폴리오 보기</a>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-6 text-center">
+        <h2 className="font-semibold mb-2">QR 코드 (NFC 링크용)</h2>
+        <QRCode value={cardURL} size={128} />
+        <p className="text-sm mt-2 break-all">{cardURL}</p>
+      </div>
+    </div>
+  );
+}
